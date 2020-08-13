@@ -51,13 +51,13 @@
                     <div id="mainNav" class="collapse navbar-collapse tm-bg-white">
                         <ul class="navbar-nav ml-auto">
                             <li class="nav-item">
-                                <a class="nav-link active" href="#top">Home <span class="sr-only">(current)</span></a>
+                                <a class="nav-link active" href="/">Home <span class="sr-only">(current)</span></a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#tm-section-2">Mask Detection</a>
+                                <a class="nav-link" href="/maskDetection">Mask Detection</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#tm-section-3">Distance Prediction</a>
+                                <a class="nav-link" href="/distance_prediction">Distance Prediction</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="#tm-section-4">Contact Us</a>
@@ -69,25 +69,19 @@
         </div> <!-- container -->
 
     </div> <!-- .tm-top-bar -->
-    <div class="tm-page-wrap mx-auto">
-        <div class="tm-container-outer" id="tm-section-2">
-            <section class="tm-slideshow-section">
-                <div class="tm-slideshow">
-                    <img src="static/img/tm-img-06.jpg" alt="Image" height="350" width="350">
-                </div>
-                <div>
-                    <form class="tm-search-form tm-section-pad-2" action="/generateUUID" method="POST">
-                        <p>Name <input type="text" name="Name"/></p>
-                        <p>MobileNumber <input type="text" name="MobileNumber"/></p>
-                        <p>Aadhar <input type="text" name="Aadhar"/></p>
-                        <p>NoOfPeople <input type="text" name="NoOfPeople"/></p>
-                        <p><input type="submit" value="submit"/></p>
-                    </form>
-
-                </div>
-            </section>
-        </div>
+    <br>
+    <br>
+    <br>
+    <div style="text-align:center;">
+        <form action="/generateUUID" method="POST">
+            <p>Name <input type="text" name="Name"/></p>
+            <p>MobileNumber <input type="text" name="MobileNumber"/></p>
+            <p>Aadhar <input type="text" name="Aadhar"/></p>
+            <p>NoOfPeople <input type="text" name="NoOfPeople"/></p>
+            <p><input type="submit" value="submit"/></p>
+        </form>
     </div>
 
+</div>
 </body>
 </html>

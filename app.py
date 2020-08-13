@@ -1,24 +1,20 @@
 import base64
-import io
-from io import StringIO
-import numpy as np
-import cv2
-import imutils
-from PIL import Image
-from flask import Flask, render_template, request
-# Socket IO Dependencies
-from flask_socketio import SocketIO, emit
 
-from mask_detection.mask_detect import mask_detect
+from flask import Flask, render_template, request, Response, make_response
 
+from video_camera import VideoCamera
+import requests as rq
 app = Flask(__name__)
-# Initalizing SocketIO
-socketio = SocketIO(app)
 
-
+video_stream = VideoCamera(0)
 @app.route('/')
 def hello():
     return render_template('home.html')
+
+@app.route('/distance_prediction')
+def distance_prediction():
+
+    return render_template('distance_prediction.html')
 
 
 @app.route('/generateUUID', methods=['POST'])
@@ -29,46 +25,60 @@ def generate_uuid():
     with open('UserUniqueCode.csv', 'w') as f:
         f.write(str(form['Aadhar']) + ',' + form['MobileNumber'] + ',' + form['Name'] + ',' + str(id.int))
     print(str(id.int))
-    return str(id.int)
-
-@app.route('/mask_detect')
-def home():
-    print("SERVER STARTED")
-    return render_template('index.html')
-
-
-# Creating a SocketIO connetion named connect to initially test connection
-@socketio.on('connect')
-def test_connect():
-    print("SOCKET CONNECTED")
+    qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + str(id.int)
+    response = rq.get(qr_url)
+    #with open('./static/img/sample.png', 'wb') as f:
+        #f.write(response.content)
+    b64_src = "data:image/jpeg;charset=utf-8;base64,"
 
 
-@socketio.on('image', namespace='/mask_detect')
-def image(data_image):
-    sbuf = StringIO()
-    sbuf.write(data_image)
+    return render_template('qr.html', img_src = b64_src + base64.b64encode(response.content).decode('utf-8'))
 
-    # decode and convert into image
-    b = io.BytesIO(base64.b64decode(data_image))
-    pimg = Image.open(b)
 
-    # Process the image frame
-    frame = np.array(pimg)
-    #frame = imutils.resize(pimg, width=700)
-    frame = mask_detect(frame)
-    print(frame);
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    imgencode = cv2.imencode('.jpeg', frame)[1]
+@app.route('/maskDetection')
+def show_webcam():
+    return render_template('video_feed.html')
 
-    # base64 encode
-    stringData = base64.b64encode(imgencode).decode('utf-8')
-    b64_src = 'data:image/jpeg;charset=utf-8;base64,'
-    stringData = b64_src + stringData
 
-    # emit the frame back
-    emit('response_back', stringData)
+@app.route('/upload', methods=["POST"])
+def transform_view():
+    request_file = request.files['data_file']
+    if not request_file:
+        return "No file"
+
+    #request_file.filename
+    file_contents = request_file.stream.read()
+
+    result = (file_contents)
+
+    with open('result.mp4', 'wb') as f:
+        f.write(result)
+
+
+    return render_template('upload.html')
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    image = request.args.get('image')
+
+    print(type(image))
+    return ""
+
+
+def gen(camera):
+    while True:
+        frame = camera.get_frame()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+
+@app.route('/video_feed')
+def video_feed():
+    src = request.args.get('src')
+    video_stream = VideoCamera(src)
+    return Response(gen(video_stream),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 if __name__ == '__main__':
-    # Joining the socket to the App
-    socketio.run(app)
+    app.run()
